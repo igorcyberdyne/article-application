@@ -13,6 +13,7 @@ use App\Exception\SearchException;
 use App\Mapper\ArticleMapper;
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
+use App\Service\ProcessTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Exception;
@@ -25,6 +26,7 @@ class ArticleServiceImpl implements ArticleService
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ProcessTracker         $processTracker,
     )
     {
         $this->articleRepository = $this->entityManager->getRepository(Article::class);
@@ -72,6 +74,10 @@ class ArticleServiceImpl implements ArticleService
      */
     public function retrieveArticles(?array $criteria, ?int $limit = null, ?int $offset = null): array
     {
+        if ($limit == 0) {
+            return [];
+        }
+
         try {
             $articles = $this->articleRepository->findAllBy($criteria, $limit, $offset);
         } catch (Throwable $exception) {
@@ -131,6 +137,10 @@ class ArticleServiceImpl implements ArticleService
 
             return ArticleMapper::mapToArticleDto($article);
         } catch (Exception $exception) {
+            try {
+                $this->processTracker->getLogger()->critical(ArticleMapper::mapToArticleDto($article));
+            } catch (Throwable $exception) {
+            }
             throw new SavingException("Error on saving article", $exception->getCode(), $exception);
         }
     }

@@ -4,6 +4,7 @@ namespace App\Tools;
 
 
 use closure;
+use DateTime;
 use InvalidArgumentException;
 
 class PaginationProcessor
@@ -14,6 +15,7 @@ class PaginationProcessor
     private array $filter;
     private int $limit;
     private int $offset;
+    private string $searchKey;
 
     public function __construct(
         $limit,
@@ -23,7 +25,7 @@ class PaginationProcessor
     )
     {
         foreach ([$limit, $offset] as $arg) {
-            if (empty($arg) || 1 === preg_match('/^[0-9]+$/', $arg)) {
+            if ($arg == 0 || empty($arg) || 1 === preg_match('/^[0-9]+$/', $arg)) {
                 continue;
             }
 
@@ -33,10 +35,16 @@ class PaginationProcessor
 
         $this->maxRows = min($this->maxRows, self::MAX_ROWS);
 
-        $this->offset = !empty($offset) ? $offset : 0;
-        $this->limit = !empty($limit) ? (($limit) <= $maxRows ? $limit : $maxRows) : $maxRows;
+        $this->offset = is_null($offset) ? 0 : $offset;
+        $this->limit = is_null($limit) ? $maxRows : min($limit, $maxRows);
 
         $this->paginatorUrl = !empty($this->paginatorUrl) ? trim($paginatorUrl) : null;
+
+        $query = http_build_query([
+            "limit" => $this->limit,
+            "offset" => $this->offset,
+        ]);
+        $this->searchKey = Tools::getSlug((new DateTime())->format("Y-m-d"), $this->paginatorUrl ?? "", "?", $query);
     }
 
     public function setFilter(?array $filter = []): static
@@ -60,17 +68,22 @@ class PaginationProcessor
         return $this;
     }
 
+    public function getSearchKey(): string
+    {
+        return $this->searchKey;
+    }
+
     /**
      * @return array
      */
     public function getResult(): array
     {
         $data = call_user_func($this->data, $this->filter, $this->limit, $this->offset);
-        $total = call_user_func($this->count, $this->filter);
+        $total = call_user_func($this->count, $this->filter, $this->limit);
 
+        $currentPage = $this->limit <= 0 ? 1 : floor($this->offset / $this->limit) + 1;
+        $totalPage = $this->limit <= 0 ? 0 : ceil($total / $this->limit);
 
-        $currentPage = floor($this->offset / $this->limit) + 1;
-        $totalPage = floor($total / $this->limit) + 1;
 
         $paginator = [
             "total" => $total,
@@ -82,7 +95,7 @@ class PaginationProcessor
 
             $nextPageUrl = null;
             $offsetForNextPage = $this->offset + $this->limit;
-            if ($offsetForNextPage <= $total) {
+            if ($offsetForNextPage < $total) {
                 $query = http_build_query([
                     "limit" => $this->limit,
                     "offset" => $offsetForNextPage,
@@ -99,7 +112,6 @@ class PaginationProcessor
                     "offset" => $offsetForPreviousPage,
                 ]);
                 $previousPageUrl = $this->paginatorUrl . "?" . $query;
-
             }
 
             $paginator = array_merge($paginator, [

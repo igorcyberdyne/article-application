@@ -5,7 +5,7 @@ namespace App\EventSubscriber;
 
 
 use App\Entity\Entity;
-use App\Tools\Tools;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\EventSubscriber;
@@ -32,6 +32,6 @@ class DatabaseActivitySubscriber implements EventSubscriber
             return;
         }
 
-        $entity->setUpdatedAt(Tools::currentDatetime());
+        $entity->setUpdatedAt(new DateTime());
     }
 }

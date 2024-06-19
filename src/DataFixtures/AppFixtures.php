@@ -8,6 +8,7 @@ use App\Stubs\ArticleStub;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use JWT\Authentication\JWT;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
@@ -28,12 +29,14 @@ class AppFixtures extends Fixture
         $user = new User();
         $user->setEmail("user@gmail.com");
         $user->setRoles(["ROLE_USER"]);
+        $user->setAccessToken(JWT::encode(["email" => $user->getEmail(), "roles" => $user->getRoles()], "fake_key"));
         $user->setPassword($this->userPasswordHasher->hashPassword($user, "user"));
         $manager->persist($user);
 
         $userAdmin = new User();
         $userAdmin->setEmail("admin@gmail.com");
         $userAdmin->setRoles(["ROLE_ADMIN"]);
+        $userAdmin->setAccessToken(JWT::encode(["email" => $userAdmin->getEmail(), "roles" => $userAdmin->getRoles()], "fake_key"));
         $userAdmin->setPassword($this->userPasswordHasher->hashPassword($userAdmin, "admin"));
         $manager->persist($userAdmin);
 
@@ -41,7 +44,7 @@ class AppFixtures extends Fixture
 
 
         // Create articles
-        $articles = ArticleStub::loadArticles();
+        $articles = ArticleStub::loadArticles(2000);
         foreach ($articles as $articleDto) {
             $this->articleService->createArticle($articleDto);
         }

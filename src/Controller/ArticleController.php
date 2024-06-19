@@ -9,12 +9,18 @@ use App\Exception\SavingException;
 use App\Factory\DtoFactory;
 use App\Service\ArticleService;
 use App\Tools\PaginationProcessor;
+use Psr\Cache\CacheException;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\CacheItem;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 
 #[Route(path: '/api/v1/articles', name: 'api_v1_articles_')]
@@ -28,10 +34,13 @@ class ArticleController extends AbstractController
 
     /**
      * @param RequestStack $requestStack
+     * @param TagAwareCacheInterface $cache
      * @return JsonResponse
+     * @throws CacheException
+     * @throws InvalidArgumentException
      */
     #[Route(path: '/', name: 'list', condition: "context.getMethod() in ['GET']")]
-    public function articles(RequestStack $requestStack): JsonResponse
+    public function articles(RequestStack $requestStack, TagAwareCacheInterface $cache): JsonResponse
     {
         $query = $requestStack->getCurrentRequest()->query->all();
 
@@ -41,20 +50,34 @@ class ArticleController extends AbstractController
             paginatorUrl: $this->generateUrl("api_v1_articles_list", [], UrlGeneratorInterface::ABSOLUTE_URL)
         );
 
-        $paginatorProcessor
-            ->setFilter([
-                "title" => $query["title"] ?? null,
-                "authorName" => $query["authorName"] ?? null,
-                "sourceName" => $query["sourceName"] ?? null,
-            ])
-            ->setCount(function (array $filter) {
-                return $this->articleService->countArticles($filter);
-            })
-            ->setData(function (array $filter, int $limit, int $offset) {
-                return $this->articleService->retrieveArticles($filter, $limit, $offset);
-            });
+        $criteria = [
+            "title" => $query["title"] ?? null,
+            "authorName" => $query["authorName"] ?? null,
+            "sourceName" => $query["sourceName"] ?? null,
+        ];
 
-        return $this->json($paginatorProcessor->getResult());
+        /** @var CacheItem $cacheItem */
+        $cacheItem = $cache->getItem("articles.list_" . $paginatorProcessor->getSearchKey());
+        $result = $cacheItem->get() ?? [];
+
+        if (!$cacheItem->isHit()) {
+            $paginatorProcessor
+                ->setFilter($criteria)
+                ->setCount(function (array $filter, int $limit) {
+                    return $limit <= 0 ? 0 : $this->articleService->countArticles($filter);
+                })
+                ->setData(function (array $filter, int $limit, int $offset) {
+                    return $this->articleService->retrieveArticles($filter, $limit, $offset);
+                })
+            ;
+
+            $result = $paginatorProcessor->getResult();
+
+            $cacheItem->tag("articles.list")->set($result);
+            $cache->save($cacheItem);
+        }
+
+        return $this->json($result);
     }
 
     /**
@@ -74,6 +97,7 @@ class ArticleController extends AbstractController
      * @throws MissingRequireFieldException
      */
     #[Route(path: '/', name: 'create', condition: "context.getMethod() in ['POST']")]
+    #[IsGranted(new Expression('is_granted("ROLE_USER") or is_granted("ROLE_ADMIN")'))]
     public function create(
         RequestStack $requestStack
     ): JsonResponse
@@ -99,6 +123,7 @@ class ArticleController extends AbstractController
      * @throws ResourceNotFoundException
      */
     #[Route(path: '/{id}', name: 'update', condition: "context.getMethod() in ['PUT']")]
+    #[IsGranted(new Expression('is_granted("ROLE_USER") or is_granted("ROLE_ADMIN")'))]
     public function update(
         int          $id,
         RequestStack $requestStack
@@ -128,6 +153,7 @@ class ArticleController extends AbstractController
      * @throws ResourceNotFoundException
      */
     #[Route(path: '/{id}', name: 'delete', condition: "context.getMethod() in ['DELETE']")]
+    #[IsGranted("ROLE_ADMIN")]
     public function delete(
         int $id,
     ): Response

@@ -13,13 +13,13 @@ use App\Gateway\ArticleGatewayRepository;
 use App\Repository\ArticleRepository;
 use App\Service\ArticleService;
 use App\Service\Impl\ArticleServiceImpl;
+use App\Service\ProcessTracker;
 use App\Stubs\ArticleStub;
 use App\Tests\ArticleAppBaseTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use Throwable;
-use function PHPUnit\Framework\assertNotEmpty;
 
 class ArticleServiceTest extends ArticleAppBaseTestCase
 {
@@ -148,7 +148,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
             /** @var ArticleService|MockObject $articleService */
             $articleService = $this
                 ->getMockBuilder(get_class($this->articleService))
-                ->setConstructorArgs([$entityManager])
+                ->setConstructorArgs([$entityManager, $this->getService(ProcessTracker::class)])
                 ->enableProxyingToOriginalMethods()
                 ->getMock();
 
@@ -174,7 +174,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
      * @return array[]
      * @throws Exception
      */
-    public static function articlesProvider(): array
+    public function articlesProvider(): array
     {
         return [
             [

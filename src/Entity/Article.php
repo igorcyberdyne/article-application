@@ -28,10 +28,10 @@ class Article extends Entity
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?DateTimeInterface $publishedAt = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 100)]
     private ?string $sourceName = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $authorName = null;
 
     public function getTitle(): ?string
