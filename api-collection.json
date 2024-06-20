@@ -37,7 +37,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/articles/108",
+							"raw": "{{host}}/api/v1/articles/1",
 							"host": [
 								"{{host}}"
 							],
@@ -45,7 +45,7 @@
 								"api",
 								"v1",
 								"articles",
-								"108"
+								"1"
 							]
 						}
 					},
@@ -55,15 +55,50 @@
 					"name": "CreateArticle",
 					"request": {
 						"method": "POST",
-						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"title\",\r\n    \"description\": \"description\",\r\n    \"permalink\": \"permalink\",\r\n    \"sourceName\": \"sourceName\",\r\n    \"publishedAt\": \"publishedAt\",\r\n    \"authorName\": \"authorName\",\r\n    \"imageUrl\": \"imageUrl\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "title",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "description",
+									"type": "text"
+								},
+								{
+									"key": "permalink",
+									"value": "permalink",
+									"type": "text"
+								},
+								{
+									"key": "sourceName",
+									"value": "sourceName",
+									"type": "text"
+								},
+								{
+									"key": "publishedAt",
+									"value": "2024-06-20",
+									"type": "text"
+								},
+								{
+									"key": "authorName",
+									"value": "authorName",
+									"type": "text"
+								},
+								{
+									"key": "imageUrl",
+									"value": "imageUrl",
+									"type": "text"
+								},
+								{
+									"key": "externalRef",
+									"value": "externalRef",
+									"type": "text"
 								}
-							}
+							]
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/articles/",
@@ -82,6 +117,70 @@
 				},
 				{
 					"name": "UpdateArticle",
+					"request": {
+						"method": "PUT",
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "title",
+									"value": "title",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "description",
+									"type": "text"
+								},
+								{
+									"key": "permalink",
+									"value": "permalink",
+									"type": "text"
+								},
+								{
+									"key": "sourceName",
+									"value": "sourceName",
+									"type": "text"
+								},
+								{
+									"key": "publishedAt",
+									"value": "2024-06-20",
+									"type": "text"
+								},
+								{
+									"key": "authorName",
+									"value": "authorName",
+									"type": "text"
+								},
+								{
+									"key": "imageUrl",
+									"value": "imageUrlxxsdfsf",
+									"type": "text"
+								},
+								{
+									"key": "externalRef",
+									"value": "externalRef",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/articles/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"articles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateArticleOld",
 					"request": {
 						"method": "PUT",
 						"header": [],
@@ -212,7 +311,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/api/v1/articles/109",
+					"raw": "{{host}}/api/v1/articles/1",
 					"host": [
 						"{{host}}"
 					],
@@ -220,7 +319,7 @@
 						"api",
 						"v1",
 						"articles",
-						"109"
+						"1"
 					]
 				}
 			},
