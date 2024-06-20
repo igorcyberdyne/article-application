@@ -44,7 +44,7 @@ class AppFixtures extends Fixture
 
 
         // Create articles
-        $articles = ArticleStub::loadArticles(2000);
+        $articles = ArticleStub::loadArticles(500);
         foreach ($articles as $articleDto) {
             $this->articleService->createArticle($articleDto);
         }

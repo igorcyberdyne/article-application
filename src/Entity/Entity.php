@@ -20,9 +20,6 @@ abstract class Entity
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     protected ?DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    protected ?DateTimeInterface $deletedAt = null;
-
     public function __construct()
     {
         $this->createdAt = new DateTime();
@@ -54,18 +51,6 @@ abstract class Entity
     public function setUpdatedAt(DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getDeletedAt(): ?DateTimeInterface
-    {
-        return $this->deletedAt;
-    }
-
-    public function setDeletedAt(?DateTimeInterface $deletedAt): static
-    {
-        $this->deletedAt = $deletedAt;
 
         return $this;
     }
