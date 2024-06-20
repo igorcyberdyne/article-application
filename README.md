@@ -7,12 +7,16 @@ API externes, des flux RSS et des fichier locaux.
 Ces articles sont ensuite traités et stockés dans une base de données.
 
 Ci-dessous la liste des ressources :
-- Création d'un utilisateur (https://developers.ar24.fr/doc/#post-create-user)
-- Récupération des informations d'un utilisateur (https://developers.ar24.fr/doc/#get-get-user-info)
-- Ajout d'une pièce jointe (https://developers.ar24.fr/doc/#post-upload-an-attachment)
-- Envoi d'un courrier avec une pièce jointe - Regular Registered Mail ( https://developers.ar24.fr/doc/#post-send-a-simple-or-eidas-registered-mail)
-- Récupération des informations d'un courrier (https://developers.ar24.fr/doc/#get-get-registered-mail-info)
-- Déchiffrement du résultat des requêtes (https://developers.ar24.fr/doc/#api-encryption)
+- RSS -> [https://www.lemonde.fr/rss/une.xml](https://www.lemonde.fr/rss/une.xml)
+- API -> [https://saurav.tech/NewsAPI/top-headlines/category/health/fr.json](https://saurav.tech/NewsAPI/top-headlines/category/health/fr.json)
+- API -> [https://api.spaceflightnewsapi.net/v3/articles](https://api.spaceflightnewsapi.net/v3/articles)
+
+## Les tâches implémentées sont :
+- Intégration des articles venant des sources externes ci-dessus, cela se fait via une commande, à exécuter tous les jour comme un CRON
+- Via API : Créer Modifier, Supprimer un article
+- Authentification API afin de pouvoir Créer Modifier, Supprimer un article
+- Gestion de cache afin de limiter des requêtes répétitives vers les mêmes ressources
+- Optimisation pour les grandes quantités d'articles provenant de différents sources
 
 ## Comment ça marche ?
 ###  Téléchargement du projet
@@ -45,7 +49,7 @@ La command permet de créer des fakes articles et utilisateurs. (Cf le fichier `
 
 Ceci est la liste des API disponibles.
 
-    1) Articles : Lister les articles et faire la recherche par : le titre, nom de l'auteur et la source de l'article
+    1) Articles : Lister les articles par ordre décroissant et faire la recherche par : le titre, nom de l'auteur et la source de l'article
     2) ArticleById : Recherche un article par son ID
     3) CreateArticle : Créer un article
     4) UpdateArticle : Mettre à jour un article
