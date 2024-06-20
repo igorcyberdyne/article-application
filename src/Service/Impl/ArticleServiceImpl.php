@@ -19,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Exception;
 use InvalidArgumentException;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Throwable;
 
 class ArticleServiceImpl implements ArticleService
@@ -28,6 +29,7 @@ class ArticleServiceImpl implements ArticleService
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ProcessTracker         $processTracker,
+        private readonly TagAwareCacheInterface $tagAwareCache
     )
     {
         $this->articleRepository = $this->entityManager->getRepository(Article::class);
@@ -135,7 +137,10 @@ class ArticleServiceImpl implements ArticleService
             $this->entityManager->persist($article);
             $this->entityManager->flush();
 
-            # TODO dispatch event
+
+            try {
+                $this->tagAwareCache->invalidateTags(["articles.list"]);
+            } catch (Throwable) {}
 
             return ArticleMapper::mapToArticleDto($article);
         } catch (Exception $exception) {

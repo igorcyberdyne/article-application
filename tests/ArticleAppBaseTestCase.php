@@ -20,9 +20,7 @@ abstract class ArticleAppBaseTestCase extends KernelTestCase
         parent::setUp();
 
         // (1) boot the Symfony kernel. See phpunit.xml.dist for config
-        $_SERVER["DATABASE_URL"] = $_ENV["DATABASE_URL"] = "mysql://root@127.0.0.1:3306/article_app";
         self::bootKernel();
-
 
         //static::$containerInterface = self::$kernel->getContainer();
         static::$containerInterface = new AppTestContainer(static::$kernel);

@@ -20,6 +20,7 @@ use App\Tests\ArticleAppBaseTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Throwable;
 
 class ArticleServiceTest extends ArticleAppBaseTestCase
@@ -44,7 +45,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
         $articleDto = ArticleStub::loadArticles()[0];
         $this->articleService->createArticle($articleDto);
 
-        $articleDto = $this->articleService->retrieveArticles([])[0];
+        $articleDto = $this->articleService->retrieveArticles(limit: 1)[0];
 
         $article = $this->articleService->getArticleById($articleDto->id);
         self::assertEquals($articleDto, $article);
@@ -65,8 +66,9 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
                 $this->articleService->createArticle($article);
             }
 
-            $articlesSaved = $this->articleService->retrieveArticles(order: ArrayOrder::ASC);
+            $articlesSaved = $this->articleService->retrieveArticles(limit: count($articles));
             self::assertNotEmpty($articlesSaved);
+            krsort($articlesSaved);
 
             $i = 0;
             foreach ($articlesSaved as $articleSaved) {
@@ -86,9 +88,9 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
     {
         $this->wrapInRollback(function () {
             $article = ArticleStub::loadArticles()[0];
-            $this->articleService->createArticle($article);
+            $articleId = $this->articleService->createArticle($article)->id;
 
-            $oldArticle = $this->articleService->retrieveArticles([])[0];
+            $oldArticle = $this->articleService->getArticleById($articleId);
             $oldArticle->permalink = "https://google.com";
 
             $this->articleService->updateArticle($oldArticle);
@@ -148,7 +150,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
             /** @var ArticleService|MockObject $articleService */
             $articleService = $this
                 ->getMockBuilder(get_class($this->articleService))
-                ->setConstructorArgs([$entityManager, $this->getService(ProcessTracker::class)])
+                ->setConstructorArgs([$entityManager, $this->getService(ProcessTracker::class), $this->getService(TagAwareCacheInterface::class)])
                 ->enableProxyingToOriginalMethods()
                 ->getMock();
 
@@ -210,8 +212,9 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
                 $this->articleService->createArticle($article);
             }
 
-            $articlesSaved = $this->articleService->retrieveArticles(order: ArrayOrder::ASC);
+            $articlesSaved = $this->articleService->retrieveArticles(limit: count($articles));
             self::assertNotEmpty($articlesSaved);
+            krsort($articlesSaved);
 
             $i = 0;
             foreach ($articlesSaved as $articleSaved) {
