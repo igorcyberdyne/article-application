@@ -2,18 +2,21 @@
 
 namespace App\Tests;
 
+use App\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Throwable;
 
 abstract class ArticleAppBaseTestCase extends KernelTestCase
 {
     protected static ContainerInterface $containerInterface;
     protected EntityManagerInterface $entityManager;
+
 
     protected function setUp(): void
     {
@@ -33,6 +36,63 @@ abstract class ArticleAppBaseTestCase extends KernelTestCase
         return static::$containerInterface;
     }
 
+
+    protected function givenAppUrl()
+    {
+        return $_ENV["APP_URL"] ?? "http://localhost:8080";
+    }
+
+    protected function givenPasswordHasher(): UserPasswordHasherInterface
+    {
+        return $this->getService(UserPasswordHasherInterface::class);
+    }
+
+    public function givenUserWithRoleUser(
+        ?string $email = null,
+        ?string $password = null,
+    ): User
+    {
+        return $this->createUser(
+            !empty($email) ? $email : sprintf("user+%s@gmail.com", uniqid()),
+            !empty($password) ? $password : "password",
+            "ROLE_USER"
+        );
+    }
+
+    public function givenUserWithRoleAdmin(
+        ?string $email = null,
+        ?string $password = null,
+    ): User
+    {
+        return $this->createUser(
+            !empty($email) ? $email : sprintf("admin+%s@gmail.com", uniqid()),
+            !empty($password) ? $password : "password",
+            "ROLE_ADMIN"
+        );
+    }
+
+    /**
+     * @param string $email
+     * @param string $password
+     * @param string $role
+     * @return User
+     */
+    public function createUser(
+        string $email,
+        string $password,
+        string $role
+    ): User
+    {
+        $user = new User();
+        $user->setEmail($email);
+        $user->setRoles([$role]);
+        $user->setPassword($this->givenPasswordHasher()->hashPassword($user, $password));
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $user;
+    }
 
     protected static function getKernelClass(): string
     {

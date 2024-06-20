@@ -22,7 +22,7 @@ class User extends Entity implements UserInterface, PasswordAuthenticatedUserInt
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $accessToken = null;
 
     public function getId(): ?int
@@ -100,7 +100,7 @@ class User extends Entity implements UserInterface, PasswordAuthenticatedUserInt
         return $this->accessToken;
     }
 
-    public function setAccessToken(string $accessToken): static
+    public function setAccessToken(?string $accessToken): static
     {
         $this->accessToken = $accessToken;
 

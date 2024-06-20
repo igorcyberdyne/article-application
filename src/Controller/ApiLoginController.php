@@ -8,14 +8,15 @@ use JWT\Authentication\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class ApiLoginController extends AbstractController
 {
-    #[Route('/api/login', name: 'api_login')]
-    public function index(EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    public function login(UserInterface $userObject, EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var User $user */
-        $user = $this->getUser();
+        $user = $userObject;
 
         if (empty($user->getAccessToken())) {
             $user->setAccessToken(JWT::encode(["email" => $user->getEmail(), "roles" => $user->getRoles()], "fake_key"));
