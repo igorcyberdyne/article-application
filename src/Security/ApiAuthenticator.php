@@ -2,8 +2,6 @@
 
 namespace App\Security;
 
-use Lexik\Bundle\JWTAuthenticationBundle\Security\Authenticator\JWTAuthenticator;
-use Namshi\JOSE\JWT;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,12 +16,14 @@ class ApiAuthenticator extends AbstractAuthenticator
 {
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has("Authorization") && str_contains($request->headers->get('Authorization'), 'Bearer ');
+        $header = apache_request_headers();
+
+        return !empty($header['Authorization']) && str_contains($header['Authorization'], 'Bearer ');
     }
 
     public function authenticate(Request $request): Passport
     {
-        $identifier = str_replace("Bearer ", "", $request->headers->get('Authorization'));
+        $identifier = str_replace("Bearer ", "", apache_request_headers()['Authorization']);
 
         return new SelfValidatingPassport(
             new UserBadge($identifier),

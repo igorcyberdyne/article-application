@@ -44,7 +44,7 @@ class ArticleRepository extends ServiceEntityRepository
         $qb = $this->getBuilderByCriteria($criteria);
 
         try {
-            $articles = $qb->setMaxResults($limit)->setFirstResult($offset)->getQuery()->getResult();
+            $articles = $qb->orderBy("a.id", "DESC")->setMaxResults($limit)->setFirstResult($offset)->getQuery()->getResult();
         } catch (Throwable $throwable) {
             throw new Exception($throwable->getMessage(), $throwable->getCode(), $throwable);
         }

@@ -18,8 +18,9 @@ abstract class DtoFactory
      */
     public static function createArticleDto(array $item): ArticleDto {
 
-        if (Tools::hasEmptyField($item, ["title", "description", "permalink", "sourceName",])) {
-            throw new MissingRequireFieldException();
+        $requiredFields = ["title", "description", "permalink", "sourceName", "publishedAt",];
+        if (Tools::hasEmptyField($item, $requiredFields)) {
+            throw new MissingRequireFieldException(implode(", ", $requiredFields));
         }
 
         try {
