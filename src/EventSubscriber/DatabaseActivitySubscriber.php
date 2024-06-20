@@ -6,13 +6,11 @@ namespace App\EventSubscriber;
 
 use App\Entity\Entity;
 use DateTime;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
-class DatabaseActivitySubscriber implements EventSubscriber
+class DatabaseActivitySubscriber implements EventSubscriberInterface
 {
     /**
      * @inheritDoc

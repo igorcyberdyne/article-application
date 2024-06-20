@@ -3,24 +3,32 @@
 namespace App\DataFixtures;
 
 use App\Entity\User;
+use App\Exception\SavingException;
 use App\Service\ArticleService;
 use App\Stubs\ArticleStub;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use JWT\Authentication\JWT;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 class AppFixtures extends Fixture
 {
     public function __construct(
         private readonly ArticleService $articleService,
-        private readonly UserPasswordHasherInterface $userPasswordHasher
+        private readonly UserPasswordHasherInterface $userPasswordHasher,
+        private readonly TagAwareCacheInterface $tagAwareCache
     )
     {
     }
 
     /**
+     * @param ObjectManager $manager
+     * @return void
+     * @throws InvalidArgumentException
+     * @throws SavingException
      * @throws Exception
      */
     public function load(ObjectManager $manager): void
@@ -48,5 +56,9 @@ class AppFixtures extends Fixture
         foreach ($articles as $articleDto) {
             $this->articleService->createArticle($articleDto);
         }
+
+        try {
+            $this->tagAwareCache->invalidateTags(["articles.list"]);
+        } catch (Exception) {}
     }
 }
