@@ -3,6 +3,7 @@
 namespace App\Tests\Service;
 
 use App\Entity\Article;
+use App\Enum\ArrayOrder;
 use App\Exception\RemovingException;
 use App\Exception\ResourceNotFoundException;
 use App\Exception\SavingException;
@@ -28,7 +29,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->articleService = $this->getService(ArticleServiceImpl::class);
     }
 
@@ -64,7 +65,8 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
                 $this->articleService->createArticle($article);
             }
 
-            $articlesSaved = $this->articleService->retrieveArticles([]);
+            $articlesSaved = $this->articleService->retrieveArticles(order: ArrayOrder::ASC);
+            self::assertNotEmpty($articlesSaved);
 
             $i = 0;
             foreach ($articlesSaved as $articleSaved) {
@@ -137,13 +139,11 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
             $entityManager = $this->createMock(EntityManagerInterface::class);
             $entityManager
                 ->method('getRepository')
-                ->with(Article::class)->willReturn($articleRepository)
-            ;
+                ->with(Article::class)->willReturn($articleRepository);
             $entityManager
                 ->expects($this->once())
                 ->method('flush')
-                ->willThrowException(new Exception("Error removing article."))
-            ;
+                ->willThrowException(new Exception("Error removing article."));
 
             /** @var ArticleService|MockObject $articleService */
             $articleService = $this
@@ -174,7 +174,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
      * @return array[]
      * @throws Exception
      */
-    public function articlesProvider(): array
+    public static function articlesProvider(): array
     {
         return [
             [
@@ -210,7 +210,7 @@ class ArticleServiceTest extends ArticleAppBaseTestCase
                 $this->articleService->createArticle($article);
             }
 
-            $articlesSaved = $this->articleService->retrieveArticles([]);
+            $articlesSaved = $this->articleService->retrieveArticles(order: ArrayOrder::ASC);
             self::assertNotEmpty($articlesSaved);
 
             $i = 0;

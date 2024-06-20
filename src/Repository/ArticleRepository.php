@@ -39,12 +39,12 @@ class ArticleRepository extends ServiceEntityRepository
     /**
      * @throws Exception
      */
-    public function findAllBy(array $criteria, ?int $limit = null, ?int $offset = null): array
+    public function findAllBy(array $criteria, ?int $limit = null, ?int $offset = null, string $orderBy = "ASC"): array
     {
         $qb = $this->getBuilderByCriteria($criteria);
 
         try {
-            $articles = $qb->orderBy("a.id", "DESC")->setMaxResults($limit)->setFirstResult($offset)->getQuery()->getResult();
+            $articles = $qb->orderBy("a.id", $orderBy)->setMaxResults($limit)->setFirstResult($offset)->getQuery()->getResult();
         } catch (Throwable $throwable) {
             throw new Exception($throwable->getMessage(), $throwable->getCode(), $throwable);
         }
@@ -74,7 +74,7 @@ class ArticleRepository extends ServiceEntityRepository
             }
         }
 
-        $qb = $this->createQueryBuilder("a")->orderBy('a.id', 'ASC');
+        $qb = $this->createQueryBuilder("a");
         foreach ($criteria as $field => $value) {
             if (empty($value)) {
                 continue;

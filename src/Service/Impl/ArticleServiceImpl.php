@@ -4,6 +4,7 @@ namespace App\Service\Impl;
 
 use App\DTO\ArticleDto;
 use App\Entity\Article;
+use App\Enum\ArrayOrder;
 use App\Exception\DomainException;
 use App\Exception\MissingRequireFieldException;
 use App\Exception\RemovingException;
@@ -67,19 +68,20 @@ class ArticleServiceImpl implements ArticleService
      * @param array|null $criteria
      * @param int|null $limit
      * @param int|null $offset
+     * @param ArrayOrder $order
      * @return ArticleDto[]|array
      * @throws MissingRequireFieldException
      * @throws InvalidArgumentException
      * @throws SearchException
      */
-    public function retrieveArticles(?array $criteria, ?int $limit = null, ?int $offset = null): array
+    public function retrieveArticles(?array $criteria = [], ?int $limit = null, ?int $offset = null, ArrayOrder $order = ArrayOrder::DESC): array
     {
-        if ($limit == 0) {
+        if ($limit === 0) {
             return [];
         }
 
         try {
-            $articles = $this->articleRepository->findAllBy($criteria, $limit, $offset);
+            $articles = $this->articleRepository->findAllBy($criteria, $limit, $offset, $order->value);
         } catch (Throwable $exception) {
             if ($exception instanceof DomainException) {
                 throw $exception;

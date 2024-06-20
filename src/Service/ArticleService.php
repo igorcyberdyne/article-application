@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\DTO\ArticleDto;
+use App\Enum\ArrayOrder;
 use App\Exception\MissingRequireFieldException;
 use App\Exception\RemovingException;
 use App\Exception\ResourceNotFoundException;
@@ -39,12 +40,13 @@ interface ArticleService
      * @param array|null $criteria
      * @param int|null $limit
      * @param int|null $offset
+     * @param ArrayOrder $order
      * @return ArticleDto[]|array
      * @throws MissingRequireFieldException
      * @throws InvalidArgumentException
      * @throws SearchException
      */
-    public function retrieveArticles(?array $criteria, ?int $limit = null, ?int $offset = null): array;
+    public function retrieveArticles(?array $criteria = [], ?int $limit = null, ?int $offset = null, ArrayOrder $order = ArrayOrder::DESC): array;
 
     /**
      * @param array|null $criteria
