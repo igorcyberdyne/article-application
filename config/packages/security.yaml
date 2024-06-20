@@ -25,12 +25,14 @@ security:
             provider: app_user_provider
             json_login:
                  check_path: api_login
-        api:
+        api_secured_resource:
             pattern: ^/api/
+            methods: [POST, PUT, DELETE]
             stateless: true
             provider: api_user_provider
             custom_authenticator: App\Security\ApiAuthenticator
             lazy: true
+            access_denied_handler: App\Security\AccessDeniedHandler
         #    jwt: ~
 
             # activate different ways to authenticate
@@ -43,8 +45,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/v1/articles, roles: PUBLIC_ACCESS, methods: [GET] }
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        #- { path: ^/api/v1/articles, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/v1/articles, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
