@@ -37,17 +37,14 @@ class ArticleControllerTest extends ArticleAppBaseTestCase
             "Create article" => [
                 "action" => self::BASE_API . "/",
                 "method" => "POST",
-                "data" => $data,
             ],
             "Update article" => [
                 "action" => self::BASE_API . "/1",
                 "method" => "PUT",
-                "data" => $data,
             ],
             "Delete article" => [
                 "action" => self::BASE_API . "/1",
                 "method" => "DELETE",
-                "data" => $data,
             ],
         ];
     }
