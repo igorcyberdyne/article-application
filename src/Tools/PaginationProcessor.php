@@ -18,8 +18,9 @@ class PaginationProcessor
     private string $searchKey;
 
     public function __construct(
-        $limit,
-        $offset,
+        ?array $filter = [],
+        ?int $limit = null,
+        ?int $offset = null,
         private int $maxRows = self::MAX_ROWS,
         private ?string $paginatorUrl = null,
     )
@@ -32,6 +33,7 @@ class PaginationProcessor
             throw new InvalidArgumentException("The param 'limit' or 'offset' must be an integer");
         }
 
+        $this->filter = empty($filter) ? [] : $filter;
 
         $this->maxRows = min($this->maxRows, self::MAX_ROWS);
 
@@ -44,14 +46,7 @@ class PaginationProcessor
             "limit" => $this->limit,
             "offset" => $this->offset,
         ]);
-        $this->searchKey = Tools::getSlug((new DateTime())->format("Y-m-d"), $this->paginatorUrl ?? "", "?", $query);
-    }
-
-    public function setFilter(?array $filter = []): static
-    {
-        $this->filter = empty($filter) ? [] : $filter;
-
-        return $this;
+        $this->searchKey = Tools::getSlug((new DateTime())->format("Y-m-d"), $this->paginatorUrl ?? "", "?", $query, json_encode($this->filter));
     }
 
     public function setData(closure $data): static
@@ -87,7 +82,7 @@ class PaginationProcessor
 
         $paginator = [
             "total" => $total,
-            "currentPage" => $currentPage,
+            "currentPage" => $total == 0 ? 0 : $currentPage,
             "totalPage" => $totalPage,
         ];
 

@@ -44,17 +44,18 @@ class ArticleController extends AbstractController
     {
         $query = $requestStack->getCurrentRequest()->query->all();
 
-        $paginatorProcessor = new PaginationProcessor(
-            $query["limit"] ?? null,
-            $query["offset"] ?? null,
-            paginatorUrl: $this->generateUrl("api_v1_articles_list", [], UrlGeneratorInterface::ABSOLUTE_URL)
-        );
-
         $criteria = [
             "title" => $query["title"] ?? null,
             "authorName" => $query["authorName"] ?? null,
             "sourceName" => $query["sourceName"] ?? null,
         ];
+
+        $paginatorProcessor = new PaginationProcessor(
+            $criteria,
+            $query["limit"] ?? null,
+            $query["offset"] ?? null,
+            paginatorUrl: $this->generateUrl("api_v1_articles_list", [], UrlGeneratorInterface::ABSOLUTE_URL)
+        );
 
         /** @var CacheItem $cacheItem */
         $cacheItem = $cache->getItem("articles.list_" . $paginatorProcessor->getSearchKey());
@@ -62,7 +63,6 @@ class ArticleController extends AbstractController
 
         if (!$cacheItem->isHit()) {
             $paginatorProcessor
-                ->setFilter($criteria)
                 ->setCount(function (array $filter, int $limit) {
                     return $limit <= 0 ? 0 : $this->articleService->countArticles($filter);
                 })

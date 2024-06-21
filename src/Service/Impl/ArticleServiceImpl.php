@@ -59,7 +59,7 @@ class ArticleServiceImpl implements ArticleService
             $this->entityManager->remove($article);
             $this->entityManager->flush();
 
-            # TODO dispatch event
+            $this->invalidateCache();
         } catch (Exception $exception) {
             throw new RemovingException("Error on deleting article", $exception->getCode(), $exception);
         }
@@ -137,10 +137,7 @@ class ArticleServiceImpl implements ArticleService
             $this->entityManager->persist($article);
             $this->entityManager->flush();
 
-
-            try {
-                $this->tagAwareCache->invalidateTags(["articles.list"]);
-            } catch (Throwable) {}
+            $this->invalidateCache();
 
             return ArticleMapper::mapToArticleDto($article);
         } catch (Exception $exception) {
@@ -164,5 +161,16 @@ class ArticleServiceImpl implements ArticleService
         }
 
         return $article;
+    }
+
+    /**
+     * @return void
+     */
+    public function invalidateCache(): void
+    {
+        try {
+            $this->tagAwareCache->invalidateTags(["articles.list"]);
+        } catch (Throwable) {
+        }
     }
 }
