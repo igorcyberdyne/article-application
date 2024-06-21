@@ -12,7 +12,7 @@ class PaginationProcessor
     const MAX_ROWS = 50;
     private closure $data;
     private closure $count;
-    private array $filter;
+    private array $filter = [];
     private int $limit;
     private int $offset;
     private string $searchKey;
@@ -33,21 +33,27 @@ class PaginationProcessor
             throw new InvalidArgumentException("The param 'limit' or 'offset' must be an integer");
         }
 
-        $this->filter = empty($filter) ? [] : $filter;
+        $filter = empty($filter) ? [] : $filter;
+        foreach ($filter as $key => $value) {
+            if (empty($value)) {
+                continue;
+            }
+
+            $this->filter[$key] = $value;
+        }
 
         $this->maxRows = min($this->maxRows, self::MAX_ROWS);
-
         $this->offset = is_null($offset) ? 0 : $offset;
         $this->limit = is_null($limit) ? $maxRows : min($limit, $maxRows);
 
 
         // Build search key
         $this->paginatorUrl = !empty($this->paginatorUrl) ? trim($paginatorUrl) : null;
-        $query = http_build_query([
+        $query = http_build_query(array_merge($this->filter, [
             "limit" => $this->limit,
             "offset" => $this->offset,
-        ]);
-        $this->searchKey = Tools::getSlug((new DateTime())->format("Y-m-d"), $this->paginatorUrl ?? "", "?", $query, json_encode($this->filter));
+        ]));
+        $this->searchKey = Tools::getSlug((new DateTime())->format("Y-m-d"), $this->paginatorUrl ?? "", "?", $query);
     }
 
     public function setData(closure $data): static
@@ -92,10 +98,10 @@ class PaginationProcessor
             $nextPageUrl = null;
             $offsetForNextPage = $this->offset + $this->limit;
             if ($offsetForNextPage < $total) {
-                $query = http_build_query([
+                $query = http_build_query(array_merge($this->filter, [
                     "limit" => $this->limit,
                     "offset" => $offsetForNextPage,
-                ]);
+                ]));
                 $nextPageUrl = $this->paginatorUrl . "?" . $query;
             }
 
@@ -103,10 +109,10 @@ class PaginationProcessor
             $previousPageUrl = null;
             $offsetForPreviousPage = $this->offset < $this->limit ? 0 : $this->offset - $this->limit;
             if ($offsetForPreviousPage > 0 || $currentPage > 1) {
-                $query = http_build_query([
+                $query = http_build_query(array_merge($this->filter, [
                     "limit" => $this->limit,
                     "offset" => $offsetForPreviousPage,
-                ]);
+                ]));
                 $previousPageUrl = $this->paginatorUrl . "?" . $query;
             }
 

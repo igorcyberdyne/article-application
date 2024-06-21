@@ -68,7 +68,6 @@ class ArticleController extends AbstractController
                 ->setData(function (array $filter, int $limit, int $offset) {
                     return $this->articleService->retrieveArticles($filter, $limit, $offset);
                 })
-                ->getResult()
             ;
 
             return $paginatorProcessor->getResult();
