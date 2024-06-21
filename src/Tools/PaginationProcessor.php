@@ -21,8 +21,8 @@ class PaginationProcessor
         ?array $filter = [],
         ?int $limit = null,
         ?int $offset = null,
-        private int $maxRows = self::MAX_ROWS,
         private ?string $paginatorUrl = null,
+        private int $maxRows = self::MAX_ROWS,
     )
     {
         foreach ([$limit, $offset] as $arg) {
@@ -40,8 +40,9 @@ class PaginationProcessor
         $this->offset = is_null($offset) ? 0 : $offset;
         $this->limit = is_null($limit) ? $maxRows : min($limit, $maxRows);
 
-        $this->paginatorUrl = !empty($this->paginatorUrl) ? trim($paginatorUrl) : null;
 
+        // Build search key
+        $this->paginatorUrl = !empty($this->paginatorUrl) ? trim($paginatorUrl) : null;
         $query = http_build_query([
             "limit" => $this->limit,
             "offset" => $this->offset,
@@ -118,6 +119,7 @@ class PaginationProcessor
         $paginator['resultCount'] = count($data);
 
         return [
+            "key" => $this->searchKey,
             "paginator" => $paginator,
             "result" => $data,
         ];

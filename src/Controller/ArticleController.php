@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 
@@ -44,24 +45,22 @@ class ArticleController extends AbstractController
     {
         $query = $requestStack->getCurrentRequest()->query->all();
 
-        $criteria = [
-            "title" => $query["title"] ?? null,
-            "authorName" => $query["authorName"] ?? null,
-            "sourceName" => $query["sourceName"] ?? null,
-        ];
-
         $paginatorProcessor = new PaginationProcessor(
-            $criteria,
+            [
+                "title" => $query["title"] ?? null,
+                "authorName" => $query["authorName"] ?? null,
+                "sourceName" => $query["sourceName"] ?? null,
+            ],
             $query["limit"] ?? null,
             $query["offset"] ?? null,
-            paginatorUrl: $this->generateUrl("api_v1_articles_list", [], UrlGeneratorInterface::ABSOLUTE_URL)
+            $this->generateUrl("api_v1_articles_list", [], UrlGeneratorInterface::ABSOLUTE_URL)
         );
 
-        /** @var CacheItem $cacheItem */
-        $cacheItem = $cache->getItem("articles.list_" . $paginatorProcessor->getSearchKey());
-        $result = $cacheItem->get() ?? [];
+        $cacheId = $this->articleService->getCacheTag() . "_" . $paginatorProcessor->getSearchKey();
 
-        if (!$cacheItem->isHit()) {
+        $result = $cache->get($cacheId, function (ItemInterface $item) use ($paginatorProcessor) {
+            $item->tag($this->articleService->getCacheTag());
+
             $paginatorProcessor
                 ->setCount(function (array $filter, int $limit) {
                     return $limit <= 0 ? 0 : $this->articleService->countArticles($filter);
@@ -69,13 +68,11 @@ class ArticleController extends AbstractController
                 ->setData(function (array $filter, int $limit, int $offset) {
                     return $this->articleService->retrieveArticles($filter, $limit, $offset);
                 })
+                ->getResult()
             ;
 
-            $result = $paginatorProcessor->getResult();
-
-            $cacheItem->tag("articles.list")->set($result);
-            $cache->save($cacheItem);
-        }
+            return $paginatorProcessor->getResult();
+        });
 
         return $this->json($result);
     }

@@ -58,7 +58,7 @@ class AppFixtures extends Fixture
         }
 
         try {
-            $this->tagAwareCache->invalidateTags(["articles.list"]);
+            $this->tagAwareCache->invalidateTags([$this->articleService->getCacheTag()]);
         } catch (Exception) {}
     }
 }

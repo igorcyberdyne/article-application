@@ -62,4 +62,9 @@ interface ArticleService
      */
     public function getArticleById(int $id): ArticleDto;
 
+    /**
+     * @return string
+     */
+    public function getCacheTag(): string;
+
 }

@@ -128,6 +128,11 @@ class ArticleServiceImpl implements ArticleService
         return ArticleMapper::mapToArticleDto($this->findArticle($id));
     }
 
+    public function getCacheTag(): string
+    {
+        return "articles.list";
+    }
+
     /**
      * @throws SavingException
      */
@@ -169,7 +174,7 @@ class ArticleServiceImpl implements ArticleService
     public function invalidateCache(): void
     {
         try {
-            $this->tagAwareCache->invalidateTags(["articles.list"]);
+            $this->tagAwareCache->invalidateTags([$this->getCacheTag()]);
         } catch (Throwable) {
         }
     }
