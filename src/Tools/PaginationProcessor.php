@@ -119,7 +119,6 @@ class PaginationProcessor
         $paginator['resultCount'] = count($data);
 
         return [
-            "key" => $this->searchKey,
             "paginator" => $paginator,
             "result" => $data,
         ];
